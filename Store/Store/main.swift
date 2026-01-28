@@ -57,9 +57,6 @@ class Receipt {
 
         return lines.joined(separator: "\n")
     }
-
-
-
 }
 
 class Register {
@@ -90,3 +87,4 @@ class Store {
         return "Hello world"
     }
 }
+
