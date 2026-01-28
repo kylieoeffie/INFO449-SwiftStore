@@ -22,6 +22,7 @@ class Item: SKU {
 class Receipt {
     private var scannedItems: [SKU] = []
     private var twoForOneNames: Set<String> = []
+    private var couponNames: [String: Int] = [:] // name -> number of coupons
 
     func add(_ sku: SKU) {
         scannedItems.append(sku)
@@ -35,13 +36,16 @@ class Receipt {
         self.twoForOneNames = names
     }
 
-    func total() -> Int {
-        var sum = 0
+    func addCoupon(forName name: String) {
+        couponNames[name, default: 0] += 1
+    }
+
+    private func adjustedPrices() -> [Int] {
+        var prices = scannedItems.map { $0.price() }
         var indicesByName: [String: [Int]] = [:]
         for (idx, sku) in scannedItems.enumerated() {
             indicesByName[sku.name, default: []].append(idx)
         }
-        var prices = scannedItems.map { $0.price() }
         for name in twoForOneNames {
             if let indices = indicesByName[name] {
                 var freeCount = indices.count / 3
@@ -55,6 +59,23 @@ class Receipt {
                 }
             }
         }
+        for (name, count) in couponNames {
+            if let indices = indicesByName[name], count > 0 {
+                var remaining = count
+                for idx in indices {
+                    if remaining == 0 { break }
+                    let p = prices[idx]
+                    prices[idx] = p - (p * 15 / 100)
+                    remaining -= 1
+                }
+            }
+        }
+        return prices
+    }
+
+    func total() -> Int {
+        let prices = adjustedPrices()
+        var sum = 0
         for p in prices { sum += p }
         return sum
     }
@@ -68,24 +89,7 @@ class Receipt {
     func output() -> String {
         var lines: [String] = []
         lines.append("Receipt:")
-        var indicesByName: [String: [Int]] = [:]
-        for (idx, sku) in scannedItems.enumerated() {
-            indicesByName[sku.name, default: []].append(idx)
-        }
-        var prices = scannedItems.map { $0.price() }
-        for name in twoForOneNames {
-            if let indices = indicesByName[name] {
-                var freeCount = indices.count / 3
-                if freeCount > 0 {
-                    for (i, idx) in indices.enumerated() {
-                        if (i + 1) % 3 == 0 && freeCount > 0 {
-                            prices[idx] = 0
-                            freeCount -= 1
-                        }
-                    }
-                }
-            }
-        }
+        let prices = adjustedPrices()
         for (idx, sku) in scannedItems.enumerated() {
             lines.append("\(sku.name): \(formatPennies(prices[idx]))")
         }
@@ -109,6 +113,10 @@ class Register {
 
     func enableTwoForOne(forName name: String) {
         twoForOne.insert(name)
+    }
+
+    func applyCoupon(forName name: String) {
+        receipt.addCoupon(forName: name)
     }
 
     func subtotal() -> Int {

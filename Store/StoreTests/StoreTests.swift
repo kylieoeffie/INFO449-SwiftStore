@@ -86,4 +86,22 @@ TOTAL: $3.98
 """
         XCTAssertEqual(expectedReceipt, receipt.output())
     }
+    
+    func testCouponPricing() {
+        register.applyCoupon(forName: "Beans (8oz Can)")
+        register.scan(Item(name: "Beans (8oz Can)", priceEach: 199))
+        register.scan(Item(name: "Beans (8oz Can)", priceEach: 199))
+        let discounted = 199 - (199 * 15 / 100)
+        XCTAssertEqual(199 + discounted, register.subtotal())
+        let receipt = register.total()
+        XCTAssertEqual(199 + discounted, receipt.total())
+        let expectedReceipt = """
+Receipt:
+Beans (8oz Can): $1.69
+Beans (8oz Can): $1.99
+------------------
+TOTAL: $3.68
+"""
+        XCTAssertEqual(expectedReceipt, receipt.output())
+    }
 }
