@@ -104,5 +104,26 @@ TOTAL: $3.68
 """
         XCTAssertEqual(expectedReceipt, receipt.output())
     }
+    
+    func testGroupedDiscountPricing() {
+        // 10% off ketchup + beer pair
+        register.setGroupedDiscount(groupA: ["Ketchup"], groupB: ["Beer"])
+        register.scan(Item(name: "Beer", priceEach: 599))
+        register.scan(Item(name: "Ketchup", priceEach: 399))
+        // 10% off both items, rounded to nearest cent
+        let discountedBeer = 599 - Int((Double(599) * 0.10).rounded())
+        let discountedKetchup = 399 - Int((Double(399) * 0.10).rounded())
+        XCTAssertEqual(discountedBeer + discountedKetchup, register.subtotal())
+        let receipt = register.total()
+        XCTAssertEqual(discountedBeer + discountedKetchup, receipt.total())
+        let expectedReceipt = """
+Receipt:
+Beer: $5.39
+Ketchup: $3.59
+------------------
+TOTAL: $8.98
+"""
+        XCTAssertEqual(expectedReceipt, receipt.output())
+    }
 }
 

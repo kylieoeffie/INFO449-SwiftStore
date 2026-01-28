@@ -23,6 +23,9 @@ class Receipt {
     private var scannedItems: [SKU] = []
     private var twoForOneNames: Set<String> = []
     private var couponNames: [String: Int] = [:] // name -> number of coupons
+    
+    private var groupA: Set<String> = []
+    private var groupB: Set<String> = []
 
     func add(_ sku: SKU) {
         scannedItems.append(sku)
@@ -34,6 +37,11 @@ class Receipt {
 
     func setTwoForOne(names: Set<String>) {
         self.twoForOneNames = names
+    }
+    
+    func setGroupedDiscount(groupA: Set<String>, groupB: Set<String>) {
+        self.groupA = groupA
+        self.groupB = groupB
     }
 
     func addCoupon(forName name: String) {
@@ -56,6 +64,26 @@ class Receipt {
                             freeCount -= 1
                         }
                     }
+                }
+            }
+        }
+        // Grouped discount: 10% off for pairs (one from A, one from B) in scan order
+        if !groupA.isEmpty || !groupB.isEmpty {
+            var aIndices: [Int] = []
+            var bIndices: [Int] = []
+            for (idx, sku) in scannedItems.enumerated() {
+                if groupA.contains(sku.name) { aIndices.append(idx) }
+                if groupB.contains(sku.name) { bIndices.append(idx) }
+            }
+            let pairs = min(aIndices.count, bIndices.count)
+            if pairs > 0 {
+                for i in 0..<pairs {
+                    let ai = aIndices[i]
+                    let bi = bIndices[i]
+                    let aDisc = Int((Double(prices[ai]) * 0.10).rounded())
+                    let bDisc = Int((Double(prices[bi]) * 0.10).rounded())
+                    prices[ai] -= aDisc
+                    prices[bi] -= bDisc
                 }
             }
         }
@@ -114,6 +142,10 @@ class Register {
 
     func enableTwoForOne(forName name: String) {
         twoForOne.insert(name)
+    }
+    
+    func setGroupedDiscount(groupA: Set<String>, groupB: Set<String>) {
+        receipt.setGroupedDiscount(groupA: groupA, groupB: groupB)
     }
 
     func applyCoupon(forName name: String) {
