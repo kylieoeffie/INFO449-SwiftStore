@@ -65,7 +65,8 @@ class Receipt {
                 for idx in indices {
                     if remaining == 0 { break }
                     let p = prices[idx]
-                    prices[idx] = p - (p * 15 / 100)
+                    let discount = Int((Double(p) * 0.15).rounded())
+                    prices[idx] = p - discount
                     remaining -= 1
                 }
             }

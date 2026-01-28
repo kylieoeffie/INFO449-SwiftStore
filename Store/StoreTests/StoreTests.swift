@@ -91,7 +91,7 @@ TOTAL: $3.98
         register.applyCoupon(forName: "Beans (8oz Can)")
         register.scan(Item(name: "Beans (8oz Can)", priceEach: 199))
         register.scan(Item(name: "Beans (8oz Can)", priceEach: 199))
-        let discounted = 199 - (199 * 15 / 100)
+        let discounted = 199 - Int((Double(199) * 0.15).rounded())
         XCTAssertEqual(199 + discounted, register.subtotal())
         let receipt = register.total()
         XCTAssertEqual(199 + discounted, receipt.total())
@@ -105,3 +105,4 @@ TOTAL: $3.68
         XCTAssertEqual(expectedReceipt, receipt.output())
     }
 }
+
