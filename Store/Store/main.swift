@@ -52,11 +52,12 @@ class Receipt {
             lines.append("\(sku.name): \(formatPennies(sku.price()))")
         }
 
-        lines.append("")
+        lines.append("------------------")  
         lines.append("TOTAL: \(formatPennies(total()))")
 
         return lines.joined(separator: "\n")
     }
+
 
 
 }
