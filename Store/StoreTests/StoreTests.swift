@@ -35,6 +35,11 @@ Beans (8oz Can): $1.99
 ------------------
 TOTAL: $1.99
 """
+        print("EXPECTED:\n\(expectedReceipt.debugDescription)")
+        print("ACTUAL:\n\(receipt.output().debugDescription)")
+        print("Expected length:", expectedReceipt.count)
+        print("Actual length:", receipt.output().count)
+
         XCTAssertEqual(expectedReceipt, receipt.output())
     }
     
